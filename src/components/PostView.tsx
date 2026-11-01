@@ -13,6 +13,9 @@ export const fmtDuration = (s: number) => {
 // `ratio` (width / height) is read from the file itself, like YouTube does on upload.
 type Frame = { img: string; dur: number; ratio: number };
 const frames = new Map<string, Promise<Frame | null>>();
+let capturePaused = false;
+/** The Shorts player pauses background frame measuring so only the visible video uses the decoder. */
+export function setCapturePaused(v: boolean) { capturePaused = v; }
 export function captureFrame(url: string): Promise<Frame | null> {
   let p = frames.get(url);
   if (p) return p;
@@ -72,8 +75,11 @@ export function useRatios(urls: string[]): Record<string, number> {
     }
     const idle = (cb: () => void) => ("requestIdleCallback" in window ? (window as any).requestIdleCallback(cb, { timeout: 8000 }) : setTimeout(cb, 4000));
     const next = () => {
+      if (!live) return;
+      // Watching Shorts: don't fight the playing video for the phone's decoder/network.
+      if (capturePaused) { setTimeout(() => idle(next), 3000); return; }
       const u = pending.shift();
-      if (!u || !live) return;
+      if (!u) return;
       captureFrame(u).then((x) => { if (live && x?.ratio) setM((o) => ({ ...o, [u]: x.ratio })); idle(next); });
     };
     if (pending.length) idle(next);

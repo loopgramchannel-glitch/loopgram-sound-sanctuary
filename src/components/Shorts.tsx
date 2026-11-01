@@ -4,7 +4,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ChevronDown, ChevronUp, Home, Pause, Play, Share2, ThumbsDown, ThumbsUp, Volume2, VolumeX, X } from "lucide-react";
 import type { PostT } from "@/lib/posts";
-import { PostThumb } from "@/components/PostView";
+import { PostThumb, setCapturePaused } from "@/components/PostView";
 import { parseVideoSource } from "@/lib/video-source";
 import { formatCount, viewsLabel } from "@/lib/post-stats";
 import { usePostEngagement } from "@/lib/use-post-stats";
@@ -123,7 +123,7 @@ export function ShortsPlayer({ shorts, startId, onShare }: { shorts: PostT[]; st
   );
 }
 
-function ShortSlide({ post, active, muted, setMuted, onShare }: { post: PostT; active: boolean; muted: boolean; setMuted: (m: boolean) => void; onShare: () => void }) {
+function ShortSlide({ post, active, warm, muted, setMuted, onShare }: { post: PostT; active: boolean; warm: boolean; muted: boolean; setMuted: (m: boolean) => void; onShare: () => void }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [paused, setPaused] = useState(false);
   const [more, setMore] = useState(false);
@@ -152,7 +152,7 @@ function ShortSlide({ post, active, muted, setMuted, onShare }: { post: PostT; a
           : <PostThumb post={post} className="absolute inset-0 h-full w-full" />
       ) : (
         <>
-          <video ref={ref} poster={post.imageUrl || undefined} playsInline loop preload={active ? "auto" : "metadata"} draggable={false} muted={muted}
+          <video ref={ref} poster={post.imageUrl || undefined} playsInline loop preload={active || warm ? "auto" : "none"} draggable={false} muted={muted}
             onClick={toggle} className="absolute inset-0 h-full w-full object-contain" />
         </>
       )}
