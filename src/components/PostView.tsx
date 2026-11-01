@@ -184,7 +184,7 @@ export function PostVideo({ url, poster }: { url: string; poster?: string }) {
     return (
       <div className="w-full bg-black sm:rounded-xl">
         <div className={`overflow-hidden ${box}`} style={vertical ? { height: "calc(100dvh - 3.5rem)", maxHeight: "none" } : undefined}>
-          <iframe src={src.embed} title={src.label} loading="lazy" className="block h-full w-full border-0" allowFullScreen
+          <iframe src={src.embed} title={src.label} className="block h-full w-full border-0" allowFullScreen
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; web-share" referrerPolicy="strict-origin-when-cross-origin" />
         </div>
       </div>
