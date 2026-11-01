@@ -7,12 +7,37 @@ export function hlsFor(url: string): string | null {
   return m ? `${m[1]}/index.m3u8` : null;
 }
 
+// Remembers which originals have a converted HLS copy, so a missing one (404) costs at most one tiny check, ever.
+const hlsKnown = new Map<string, Promise<boolean>>();
+function hasHls(u: string): Promise<boolean> {
+  let p = hlsKnown.get(u);
+  if (!p) {
+    try { const s = sessionStorage.getItem(`lg:hls:${u}`); if (s) { p = Promise.resolve(s === "1"); hlsKnown.set(u, p); return p; } } catch { /* storage off */ }
+    p = fetch(u, { method: "HEAD" }).then((r) => r.ok).catch(() => false)
+      .then((ok) => { try { sessionStorage.setItem(`lg:hls:${u}`, ok ? "1" : "0"); } catch { /* ignore */ } return ok; });
+    hlsKnown.set(u, p);
+  }
+  return p;
+}
+
 /** Attaches the best source to the element; returns a cleanup. */
 export function attachSource(v: HTMLVideoElement, url: string): () => void {
   const hls = hlsFor(url);
   let dead = false, inst: { destroy: () => void } | null = null;
   const fallback = () => { if (dead) return; inst?.destroy(); inst = null; if (v.src !== url) { v.src = url; v.load(); } };
   if (!hls) { v.src = url; return () => { dead = true; }; }
+  let cleanup: () => void = () => { dead = true; };
+  void hasHls(hls).then((ok) => {
+    if (dead) return;
+    if (!ok) { fallback(); return; }
+    cleanup = attachHls(v, url, hls, () => dead, (i) => { inst = i; }, fallback);
+  });
+  return () => { dead = true; inst?.destroy(); cleanup(); };
+}
+
+function attachHls(v: HTMLVideoElement, url: string, hls: string, isDead: () => boolean, setInst: (i: { destroy: () => void } | null) => void, fallback: () => void): () => void {
+  let inst: { destroy: () => void } | null = null;
+  const dead = false; void dead; void url;
   if (v.canPlayType("application/vnd.apple.mpegurl")) {
     const onErr = () => { v.removeEventListener("error", onErr); fallback(); };
     v.addEventListener("error", onErr);
