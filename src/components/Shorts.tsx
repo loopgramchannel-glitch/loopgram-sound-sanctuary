@@ -4,7 +4,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ChevronDown, ChevronUp, Home, Pause, Play, Share2, ThumbsDown, ThumbsUp, Volume2, VolumeX, X } from "lucide-react";
 import type { PostT } from "@/lib/posts";
-import { PostThumb } from "@/components/PostView";
+import { PostThumb, setCapturePaused } from "@/components/PostView";
 import { parseVideoSource } from "@/lib/video-source";
 import { formatCount, viewsLabel } from "@/lib/post-stats";
 import { usePostEngagement } from "@/lib/use-post-stats";
@@ -37,16 +37,25 @@ export function ShortsShelf({ posts }: { posts: PostT[] }) {
   );
 }
 
-/** YouTube-Shorts feed: native scroll-snap (finger-tracking, momentum, mouse wheel), neighbours pre-buffered, URL synced without reload. */
+/** YouTube/TikTok-style feed: native CSS scroll-snap (runs on the GPU, never freezes), one playing video,
+ *  the next one quietly pre-buffered, everything else a still picture. URL synced without reload. */
 export function ShortsPlayer({ shorts, startId, onShare }: { shorts: PostT[]; startId: string; onShare: (p: PostT) => void }) {
   const box = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(() => Math.max(0, shorts.findIndex((p) => p.id === startId)));
   const [muted, setMuted] = useState(false);
   const navigate = useNavigate();
+  const activeRef = useRef(active);
+  activeRef.current = active;
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
+    setCapturePaused(true); // stop background thumbnail work while watching
+    return () => { document.body.style.overflow = ""; setCapturePaused(false); };
+  }, []);
+  // Jump to the opened Short instantly on first paint.
+  useEffect(() => {
+    const el = box.current; if (!el) return;
+    el.scrollTop = activeRef.current * el.clientHeight;
   }, []);
   // Keep the address bar on the visible Short, but only after the swipe settles.
   useEffect(() => {
@@ -56,105 +65,43 @@ export function ShortsPlayer({ shorts, startId, onShare }: { shorts: PostT[]; st
     }, 400);
     return () => clearTimeout(t);
   }, [active, shorts]);
-
-  // YouTube-style pager: the track follows the finger 1:1 (no React re-render while dragging);
-  // a short fast flick or a drag past 18% of the screen moves exactly one Short.
-  const track = useRef<HTMLDivElement>(null);
-  const activeRef = useRef(active);
-  activeRef.current = active;
-  const place = (offset: number, animate: boolean) => {
-    const t = track.current; if (!t) return;
-    t.style.transition = animate ? "transform 260ms cubic-bezier(0.22, 0.9, 0.25, 1)" : "none";
-    t.style.transform = `translate3d(0, calc(${-activeRef.current * 100}dvh + ${offset}px), 0)`;
-  };
-  const goTo = (i: number) => {
-    const n = Math.min(shorts.length - 1, Math.max(0, i));
-    activeRef.current = n; setActive(n); place(0, true);
-  };
-  useEffect(() => { place(0, false); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { place(0, true); }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  // Which Short is on screen: read from the native scroll position (cheap, passive, rAF-throttled).
   useEffect(() => {
     const el = box.current; if (!el) return;
-    let y0 = 0, x0 = 0, t0 = 0, dy = 0, dragging = false, decided = false, lastY = 0, lastT = 0, vel = 0, down = false;
-    const begin = (x: number, y: number) => {
-      y0 = lastY = y; x0 = x; t0 = lastT = performance.now();
-      dy = 0; vel = 0; dragging = false; decided = false; down = true;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const i = Math.round(el.scrollTop / Math.max(1, el.clientHeight));
+        if (i !== activeRef.current && i >= 0 && i < shorts.length) setActive(i);
+      });
     };
-    const drag = (x: number, y: number): boolean => {
-      if (!down) return false;
-      const ddy = y - y0;
-      if (!decided) {
-        if (Math.abs(ddy) < 6 && Math.abs(x - x0) < 6) return false;
-        decided = true; dragging = Math.abs(ddy) > Math.abs(x - x0);
-      }
-      if (!dragging) return false;
-      const now = performance.now();
-      vel = (y - lastY) / Math.max(1, now - lastT); lastY = y; lastT = now;
-      const a = activeRef.current;
-      const atEdge = (a === 0 && ddy > 0) || (a === shorts.length - 1 && ddy < 0);
-      dy = atEdge ? ddy * 0.3 : ddy;
-      place(dy, false);
-      return true;
-    };
-    const end = () => {
-      down = false;
-      if (!dragging) return;
-      dragging = false;
-      const h = el.clientHeight; const a = activeRef.current;
-      const fast = Math.abs(vel) > 0.35 || (Math.abs(dy) > 30 && performance.now() - t0 < 220);
-      if ((fast || Math.abs(dy) > h * 0.18) && dy < 0) goTo(a + 1);
-      else if ((fast || Math.abs(dy) > h * 0.18) && dy > 0) goTo(a - 1);
-      else place(0, true);
-    };
-    const start = (e: TouchEvent) => { const p = e.touches[0]; if (p) begin(p.clientX, p.clientY); };
-    const move = (e: TouchEvent) => { const p = e.touches[0]; if (p && drag(p.clientX, p.clientY)) e.preventDefault(); };
-    // Mouse / pen drag works like a finger (desktop and preview).
-    const pdown = (e: PointerEvent) => { if (e.pointerType !== "touch" && e.button === 0) begin(e.clientX, e.clientY); };
-    const pmove = (e: PointerEvent) => { if (e.pointerType !== "touch") drag(e.clientX, e.clientY); };
-    const pup = (e: PointerEvent) => { if (e.pointerType !== "touch") end(); };
-    // Swallow the click that ends a mouse drag so it doesn't pause the video.
-    const click = (e: MouseEvent) => { if (Math.abs(dy) > 6) { e.stopPropagation(); e.preventDefault(); dy = 0; } };
-    let wheelLock = 0;
-    const wheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const now = performance.now();
-      if (now < wheelLock || Math.abs(e.deltaY) < 12) return;
-      wheelLock = now + 350;
-      goTo(activeRef.current + (e.deltaY > 0 ? 1 : -1));
-    };
-    el.addEventListener("touchstart", start, { passive: true });
-    el.addEventListener("touchmove", move, { passive: false });
-    el.addEventListener("touchend", end); el.addEventListener("touchcancel", end);
-    el.addEventListener("pointerdown", pdown); window.addEventListener("pointermove", pmove); window.addEventListener("pointerup", pup);
-    el.addEventListener("click", click, true);
-    el.addEventListener("wheel", wheel, { passive: false });
-    return () => {
-      el.removeEventListener("touchstart", start); el.removeEventListener("touchmove", move);
-      el.removeEventListener("touchend", end); el.removeEventListener("touchcancel", end);
-      el.removeEventListener("pointerdown", pdown); window.removeEventListener("pointermove", pmove); window.removeEventListener("pointerup", pup);
-      el.removeEventListener("click", click, true);
-      el.removeEventListener("wheel", wheel);
-    };
-  }, [shorts.length]); // eslint-disable-line react-hooks/exhaustive-deps
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => { el.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
+  }, [shorts.length]);
+
+  const goTo = (i: number) => {
+    const el = box.current; if (!el) return;
+    const n = Math.min(shorts.length - 1, Math.max(0, i));
+    el.scrollTo({ top: n * el.clientHeight, behavior: "smooth" });
+  };
   useEffect(() => {
-    const k = (e: KeyboardEvent) => { if (e.key === "ArrowDown") { e.preventDefault(); goTo(active + 1); } if (e.key === "ArrowUp") { e.preventDefault(); goTo(active - 1); } if (e.key === "Escape") navigate({ to: "/posts" }); };
+    const k = (e: KeyboardEvent) => { if (e.key === "ArrowDown") { e.preventDefault(); goTo(activeRef.current + 1); } if (e.key === "ArrowUp") { e.preventDefault(); goTo(activeRef.current - 1); } if (e.key === "Escape") navigate({ to: "/posts" }); };
     window.addEventListener("keydown", k);
     return () => window.removeEventListener("keydown", k);
   });
 
   return (
     <div className="fixed inset-0 z-[60] bg-black">
-      <div ref={box} className="h-dvh touch-none select-none overflow-hidden overscroll-none">
-        <div ref={track} className="will-change-transform">
-          {shorts.map((p, i) => (
-            <div key={p.id} className="relative flex h-dvh w-full items-center justify-center overflow-hidden [contain:strict]">
-              {Math.abs(i - active) <= 1
-                ? <ShortSlide post={p} active={i === active} muted={muted} setMuted={setMuted} onShare={() => onShare(p)} />
-                : null}
-            </div>
-          ))}
-        </div>
+      <div ref={box} className="scrollbar-none h-dvh snap-y snap-mandatory overflow-y-scroll overscroll-contain">
+        {shorts.map((p, i) => (
+          <div key={p.id} className="relative flex h-dvh w-full snap-start snap-always items-center justify-center overflow-hidden [contain:strict]">
+            {Math.abs(i - active) <= 1
+              ? <ShortSlide post={p} active={i === active} warm={i === active + 1} muted={muted} setMuted={setMuted} onShare={() => onShare(p)} />
+              : <PostThumb post={p} className="absolute inset-0 h-full w-full" />}
+          </div>
+        ))}
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between p-3">
@@ -176,7 +123,7 @@ export function ShortsPlayer({ shorts, startId, onShare }: { shorts: PostT[]; st
   );
 }
 
-function ShortSlide({ post, active, muted, setMuted, onShare }: { post: PostT; active: boolean; muted: boolean; setMuted: (m: boolean) => void; onShare: () => void }) {
+function ShortSlide({ post, active, warm, muted, setMuted, onShare }: { post: PostT; active: boolean; warm: boolean; muted: boolean; setMuted: (m: boolean) => void; onShare: () => void }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [paused, setPaused] = useState(false);
   const [more, setMore] = useState(false);
@@ -205,7 +152,7 @@ function ShortSlide({ post, active, muted, setMuted, onShare }: { post: PostT; a
           : <PostThumb post={post} className="absolute inset-0 h-full w-full" />
       ) : (
         <>
-          <video ref={ref} poster={post.imageUrl || undefined} playsInline loop preload={active ? "auto" : "metadata"} draggable={false} muted={muted}
+          <video ref={ref} poster={post.imageUrl || undefined} playsInline loop preload={active || warm ? "auto" : "none"} draggable={false} muted={muted}
             onClick={toggle} className="absolute inset-0 h-full w-full object-contain" />
         </>
       )}
