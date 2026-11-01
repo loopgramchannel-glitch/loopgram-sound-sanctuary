@@ -5,18 +5,38 @@ import { api } from "./api";
 import { getState, setState } from "./store";
 
 const done = new Set<string>();
+const trailers = new Map<string, string>();
 
-/** Warm the detail-page data on hover/touch so the click opens instantly. Uses the same query key as the page. */
+/** Best trailer key already known for a title (from a prefetch), so the player can mount at 0ms. */
+export function cachedTrailer(qc: QueryClient, type: string, id: string): string | undefined {
+  const t = type === "tv" ? "tv" : "movie";
+  const hit = trailers.get(`${t}:${id}`);
+  if (hit) return hit;
+  const d = qc.getQueryData<any>(["title", t, id]);
+  const v = d?.videos?.find((x: any) => x.type === "Trailer") ?? d?.videos?.[0];
+  return v?.key;
+}
+
+/** Warm the detail-page data on hover/touch/view so the click opens instantly. Uses the same query key as the page. */
 export function prefetchTitle(qc: QueryClient, type: string | undefined, id: number) {
   if (type === "person") return;
   const t = type === "tv" ? "tv" : "movie";
   const k = `${t}:${id}`;
   if (done.has(k) || isSlowNetwork()) return; // never prefetch on 2G / Data Saver
+  if (active >= 2) return; // cap: at most 2 prefetches in flight
   done.add(k);
-  if (done.size > 200) done.clear();
-  if (active >= 2) { done.delete(k); return; } // cap: at most 2 prefetches in flight
+  if (done.size > 300) done.clear();
   active++;
   void qc.prefetchQuery({ queryKey: ["title", t, String(id)], queryFn: () => api({ a: "title", type: t, id: String(id) }), staleTime: 30 * 60_000 })
+    .then(() => {
+      const key = cachedTrailer(qc, t, String(id));
+      if (key) {
+        trailers.set(k, key);
+        if (trailers.size > 300) trailers.delete(trailers.keys().next().value!);
+        // Warm the poster frame the player shows first.
+        if (typeof Image !== "undefined") new Image().src = `https://i.ytimg.com/vi/${key}/hqdefault.jpg`;
+      }
+    })
     .finally(() => { active--; });
 }
 let active = 0;

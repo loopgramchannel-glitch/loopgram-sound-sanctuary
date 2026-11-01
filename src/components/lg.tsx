@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Bookmark, BookmarkCheck, Star } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { img } from "@/lib/api";
-import { imgPriority, useIntentPrefetch } from "@/lib/speed";
+import { imgPriority, prefetchTitle, useIntentPrefetch, useWarmOnView } from "@/lib/speed";
 import { toggleSave, useStore } from "@/lib/store";
 
 export type Item = { id: number; media_type?: string; title: string; poster_path: string | null; backdrop_path?: string | null; date?: string | null; vote?: number | null; genre_ids?: number[]; overview?: string };
@@ -17,11 +17,12 @@ export function Poster({ item, w = "w-32 sm:w-40", eager = false }: { item: Item
   const src = img(item.poster_path, "w342");
   const qc = useQueryClient();
   const intent = useIntentPrefetch(qc, item.media_type, item.id);
+  const view = useWarmOnView<HTMLAnchorElement>(() => prefetchTitle(qc, item.media_type, item.id));
   const [bad, setBad] = useState(false);
   // Strict rule: a title whose picture is missing or fails to load is not shown.
   if (!src || bad) return null;
   return (
-    <Link {...itemLink(item)} {...intent} className={`${w} shrink-0 group`} aria-label={item.title}>
+    <Link ref={view} {...itemLink(item)} {...intent} className={`${w} shrink-0 group`} aria-label={item.title}>
       <div className="aspect-[2/3] overflow-hidden rounded-lg bg-muted">
         <img src={src} alt="" width={342} height={513} loading={eager ? "eager" : "lazy"} decoding="async" referrerPolicy="no-referrer" onError={() => setBad(true)} className="h-full w-full bg-black object-contain transition group-hover:scale-105" />
       </div>
@@ -48,13 +49,14 @@ export function Row({ title, items, reason }: { title: string; items: Item[]; re
 export function FeedCard({ item, index = 99 }: { item: Item; index?: number }) {
   const qc = useQueryClient();
   const intent = useIntentPrefetch(qc, item.media_type, item.id);
+  const view = useWarmOnView<HTMLElement>(() => prefetchTitle(qc, item.media_type, item.id));
   const src = img(item.backdrop_path ?? item.poster_path, "w780");
   const key = `${item.media_type}:${item.id}`;
   const saved = useStore((s) => s.watchlist.some((w) => w.key === key));
   const [bad, setBad] = useState(false);
   if (!src) return null;
   return (
-    <article className="group">
+    <article ref={view} className="group">
       <Link {...itemLink(item)} {...intent} className="block">
         <div className="aspect-video overflow-hidden rounded-xl bg-muted flex items-center justify-center">
           {bad ? <span className="px-4 text-center text-sm font-medium text-muted-foreground line-clamp-2">{item.title}</span>
