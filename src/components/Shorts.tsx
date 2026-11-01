@@ -134,9 +134,22 @@ function ShortSlide({ post, active, warm, muted, setMuted, onShare }: { post: Po
   useEffect(() => {
     const v = ref.current; if (!v) return;
     if (!active) { v.pause(); return; }
-    v.currentTime = 0; setPaused(false);
+    setPaused(false);
     v.muted = muted;
-    v.play().catch(() => { v.muted = true; setMuted(true); v.play().catch(() => setPaused(true)); });
+    let gone = false;
+    const start = () => {
+      if (gone) return;
+      if (!v.currentSrc && !v.src) return; // source not set yet — "canplay" will call us again
+      v.play().catch((e: unknown) => {
+        if (gone || (e as Error)?.name === "AbortError") return;
+        v.muted = true; setMuted(true);
+        v.play().catch(() => { if (!gone) setPaused(true); });
+      });
+    };
+    if (v.currentTime > 0) v.currentTime = 0;
+    start();
+    v.addEventListener("canplay", start, { once: true });
+    return () => { gone = true; v.removeEventListener("canplay", start); };
   }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (ref.current) ref.current.muted = muted; }, [muted]);
 
