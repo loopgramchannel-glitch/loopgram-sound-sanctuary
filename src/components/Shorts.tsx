@@ -76,27 +76,29 @@ export function ShortsPlayer({ shorts, startId, onShare }: { shorts: PostT[]; st
 
   useEffect(() => {
     const el = box.current; if (!el) return;
-    let y0 = 0, x0 = 0, t0 = 0, dy = 0, dragging = false, decided = false, lastY = 0, lastT = 0, vel = 0;
-    const start = (e: TouchEvent) => {
-      const p = e.touches[0]; if (!p) return; y0 = lastY = p.clientY; x0 = p.clientX; t0 = lastT = performance.now();
-      dy = 0; vel = 0; dragging = false; decided = false;
+    let y0 = 0, x0 = 0, t0 = 0, dy = 0, dragging = false, decided = false, lastY = 0, lastT = 0, vel = 0, down = false;
+    const begin = (x: number, y: number) => {
+      y0 = lastY = y; x0 = x; t0 = lastT = performance.now();
+      dy = 0; vel = 0; dragging = false; decided = false; down = true;
     };
-    const move = (e: TouchEvent) => {
-      const p = e.touches[0]; if (!p) return; const ddy = p.clientY - y0;
+    const drag = (x: number, y: number): boolean => {
+      if (!down) return false;
+      const ddy = y - y0;
       if (!decided) {
-        if (Math.abs(ddy) < 6 && Math.abs(p.clientX - x0) < 6) return;
-        decided = true; dragging = Math.abs(ddy) > Math.abs(p.clientX - x0);
+        if (Math.abs(ddy) < 6 && Math.abs(x - x0) < 6) return false;
+        decided = true; dragging = Math.abs(ddy) > Math.abs(x - x0);
       }
-      if (!dragging) return;
-      e.preventDefault();
+      if (!dragging) return false;
       const now = performance.now();
-      vel = (p.clientY - lastY) / Math.max(1, now - lastT); lastY = p.clientY; lastT = now;
+      vel = (y - lastY) / Math.max(1, now - lastT); lastY = y; lastT = now;
       const a = activeRef.current;
       const atEdge = (a === 0 && ddy > 0) || (a === shorts.length - 1 && ddy < 0);
       dy = atEdge ? ddy * 0.3 : ddy;
       place(dy, false);
+      return true;
     };
     const end = () => {
+      down = false;
       if (!dragging) return;
       dragging = false;
       const h = el.clientHeight; const a = activeRef.current;
@@ -105,21 +107,33 @@ export function ShortsPlayer({ shorts, startId, onShare }: { shorts: PostT[]; st
       else if ((fast || Math.abs(dy) > h * 0.18) && dy > 0) goTo(a - 1);
       else place(0, true);
     };
+    const start = (e: TouchEvent) => { const p = e.touches[0]; if (p) begin(p.clientX, p.clientY); };
+    const move = (e: TouchEvent) => { const p = e.touches[0]; if (p && drag(p.clientX, p.clientY)) e.preventDefault(); };
+    // Mouse / pen drag works like a finger (desktop and preview).
+    const pdown = (e: PointerEvent) => { if (e.pointerType !== "touch" && e.button === 0) begin(e.clientX, e.clientY); };
+    const pmove = (e: PointerEvent) => { if (e.pointerType !== "touch") drag(e.clientX, e.clientY); };
+    const pup = (e: PointerEvent) => { if (e.pointerType !== "touch") end(); };
+    // Swallow the click that ends a mouse drag so it doesn't pause the video.
+    const click = (e: MouseEvent) => { if (Math.abs(dy) > 6) { e.stopPropagation(); e.preventDefault(); dy = 0; } };
     let wheelLock = 0;
     const wheel = (e: WheelEvent) => {
       e.preventDefault();
       const now = performance.now();
       if (now < wheelLock || Math.abs(e.deltaY) < 12) return;
-      wheelLock = now + 450;
+      wheelLock = now + 350;
       goTo(activeRef.current + (e.deltaY > 0 ? 1 : -1));
     };
     el.addEventListener("touchstart", start, { passive: true });
     el.addEventListener("touchmove", move, { passive: false });
     el.addEventListener("touchend", end); el.addEventListener("touchcancel", end);
+    el.addEventListener("pointerdown", pdown); window.addEventListener("pointermove", pmove); window.addEventListener("pointerup", pup);
+    el.addEventListener("click", click, true);
     el.addEventListener("wheel", wheel, { passive: false });
     return () => {
       el.removeEventListener("touchstart", start); el.removeEventListener("touchmove", move);
       el.removeEventListener("touchend", end); el.removeEventListener("touchcancel", end);
+      el.removeEventListener("pointerdown", pdown); window.removeEventListener("pointermove", pmove); window.removeEventListener("pointerup", pup);
+      el.removeEventListener("click", click, true);
       el.removeEventListener("wheel", wheel);
     };
   }, [shorts.length]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -131,11 +145,11 @@ export function ShortsPlayer({ shorts, startId, onShare }: { shorts: PostT[]; st
 
   return (
     <div className="fixed inset-0 z-[60] bg-black">
-      <div ref={box} className="h-dvh touch-none overflow-hidden overscroll-none">
+      <div ref={box} className="h-dvh touch-none select-none overflow-hidden overscroll-none">
         <div ref={track} className="will-change-transform">
           {shorts.map((p, i) => (
             <div key={p.id} className="relative flex h-dvh w-full items-center justify-center overflow-hidden [contain:strict]">
-              {Math.abs(i - active) <= 2
+              {Math.abs(i - active) <= 1
                 ? <ShortSlide post={p} active={i === active} muted={muted} setMuted={setMuted} onShare={() => onShare(p)} />
                 : null}
             </div>
@@ -191,8 +205,7 @@ function ShortSlide({ post, active, muted, setMuted, onShare }: { post: PostT; a
           : <PostThumb post={post} className="absolute inset-0 h-full w-full" />
       ) : (
         <>
-          {post.imageUrl && <img src={post.imageUrl} alt="" aria-hidden className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl" />}
-          <video ref={ref} poster={post.imageUrl || undefined} playsInline loop preload="auto" muted={muted}
+          <video ref={ref} poster={post.imageUrl || undefined} playsInline loop preload={active ? "auto" : "metadata"} draggable={false} muted={muted}
             onClick={toggle} className="absolute inset-0 h-full w-full object-contain" />
         </>
       )}
