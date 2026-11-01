@@ -122,12 +122,12 @@ export function ShortsPlayer({ shorts, startId, onShare }: { shorts: PostT[]; st
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between p-3">
         <div className="pointer-events-auto flex items-center gap-2">
-          <Link to="/posts" aria-label="Back to videos" className="flex h-11 items-center gap-1 rounded-full bg-black/50 pl-2 pr-4 text-sm font-semibold text-white backdrop-blur hover:bg-black/70"><ArrowLeft className="h-6 w-6" />Back</Link>
-          <Link to="/" aria-label="Home" className="grid h-11 w-11 place-items-center rounded-full bg-black/50 text-white backdrop-blur hover:bg-black/70"><Home className="h-5 w-5" /></Link>
+          <Link to="/posts" aria-label="Back to videos" className="flex h-11 items-center gap-1 rounded-full bg-black/50 pl-2 pr-4 text-sm font-semibold text-white hover:bg-black/70"><ArrowLeft className="h-6 w-6" />Back</Link>
+          <Link to="/" aria-label="Home" className="grid h-11 w-11 place-items-center rounded-full bg-black/50 text-white hover:bg-black/70"><Home className="h-5 w-5" /></Link>
         </div>
         <div className="pointer-events-auto flex items-center gap-2">
-          <button onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"} className="grid h-11 w-11 place-items-center rounded-full bg-black/50 text-white backdrop-blur">{muted ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}</button>
-          <Link to="/posts" aria-label="Close" className="grid h-11 w-11 place-items-center rounded-full bg-black/50 text-white backdrop-blur hover:bg-black/70"><X className="h-6 w-6" /></Link>
+          <button onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"} className="grid h-11 w-11 place-items-center rounded-full bg-black/50 text-white">{muted ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}</button>
+          <Link to="/posts" aria-label="Close" className="grid h-11 w-11 place-items-center rounded-full bg-black/50 text-white hover:bg-black/70"><X className="h-6 w-6" /></Link>
         </div>
       </div>
 
@@ -171,7 +171,7 @@ function ShortSlide({ post, active, warm, muted, setMuted, onShare }: { post: Po
 
   const toggle = () => { const v = ref.current; if (!v) return; if (v.paused) { v.play(); setPaused(false); } else { v.pause(); setPaused(true); } };
   const rail = "flex flex-col items-center gap-1 text-xs font-medium text-white";
-  const btn = "grid h-12 w-12 place-items-center rounded-full bg-white/15 backdrop-blur hover:bg-white/25";
+  const btn = "grid h-12 w-12 place-items-center rounded-full bg-white/15 hover:bg-white/25";
 
   return (
     <div className="relative h-full w-full sm:aspect-[9/16] sm:w-auto sm:max-w-full sm:overflow-hidden sm:rounded-xl">

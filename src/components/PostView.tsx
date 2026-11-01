@@ -14,12 +14,17 @@ export const fmtDuration = (s: number) => {
 type Frame = { img: string; dur: number; ratio: number };
 const frames = new Map<string, Promise<Frame | null>>();
 let capturePaused = false;
+let playing = 0;
 /** The Shorts player pauses background frame measuring so only the visible video uses the decoder. */
 export function setCapturePaused(v: boolean) { capturePaused = v; }
+/** While any video is playing, background thumbnail decoding waits so playback keeps full frame rate. */
+export function markPlaying(on: boolean) { playing = Math.max(0, playing + (on ? 1 : -1)); }
+const busy = () => capturePaused || playing > 0;
+const whenFree = () => new Promise<void>((r) => { const t = () => (busy() ? setTimeout(t, 1500) : r()); t(); });
 export function captureFrame(url: string): Promise<Frame | null> {
   let p = frames.get(url);
   if (p) return p;
-  p = new Promise((resolve) => {
+  p = whenFree().then(() => new Promise((resolve) => {
     const v = document.createElement("video");
     v.crossOrigin = "anonymous"; v.muted = true; v.playsInline = true; v.preload = "metadata";
     let ratio = 0;
@@ -40,7 +45,7 @@ export function captureFrame(url: string): Promise<Frame | null> {
     };
     v.onerror = partial;
     v.src = url;
-  });
+  }));
   frames.set(url, p);
   return p;
 }
@@ -192,6 +197,8 @@ export function PostVideo({ url, poster }: { url: string; poster?: string }) {
  *  the picture is always shown whole with black bars, with a big play button, a loading ring and a preview frame. */
 function NativePlayer({ url, poster }: { url: string; poster?: string | undefined }) {
   const ref = useRef<HTMLVideoElement>(null);
+  const playingRef = useRef(false);
+  useEffect(() => () => { if (playingRef.current) { playingRef.current = false; markPlaying(false); } }, []);
   const [ratio, setRatio] = useState<number | null>(null);
   const [started, setStarted] = useState(false);
   const [buffering, setBuffering] = useState(false);
@@ -212,11 +219,12 @@ function NativePlayer({ url, poster }: { url: string; poster?: string | undefine
     : { aspectRatio: String(r), maxHeight: "80vh", maxWidth: `min(100%, calc(80vh * ${r}))` };
   return (
     <div className="relative flex w-full justify-center overflow-hidden bg-black sm:rounded-xl">
-      {portrait && frame && <img src={frame} alt="" aria-hidden className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl" />}
-      <div className="relative w-full" style={boxStyle}>
+      <div className="relative w-full" style={{ ...boxStyle, transform: "translateZ(0)" }}>
         <video ref={ref} poster={frame} crossOrigin="anonymous" controls={started} playsInline preload="metadata" className="absolute inset-0 block h-full w-full object-contain"
-          onLoadedMetadata={(e) => { const v = e.currentTarget; if (v.videoWidth && v.videoHeight) setRatio(Math.min(4, Math.max(0.25, v.videoWidth / v.videoHeight))); }}
-          onPlay={() => setStarted(true)} onWaiting={() => setBuffering(true)} onPlaying={() => setBuffering(false)} onCanPlay={() => setBuffering(false)}
+          onLoadedMetadata={(e) => { const v = e.currentTarget; v.playbackRate = 1; v.defaultPlaybackRate = 1; if (v.videoWidth && v.videoHeight) setRatio(Math.min(4, Math.max(0.25, v.videoWidth / v.videoHeight))); }}
+          onPlay={() => { setStarted(true); if (!playingRef.current) { playingRef.current = true; markPlaying(true); } }}
+          onPause={() => { if (playingRef.current) { playingRef.current = false; markPlaying(false); } }}
+          onWaiting={() => setBuffering(true)} onPlaying={() => setBuffering(false)} onCanPlay={() => setBuffering(false)}
           onError={() => { setError(true); setBuffering(false); }} />
         {!started && !error && (
           <button onClick={play} aria-label="Play video" className="group absolute inset-0 grid place-items-center bg-gradient-to-t from-background/60 via-transparent to-transparent">
