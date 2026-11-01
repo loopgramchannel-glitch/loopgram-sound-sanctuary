@@ -30,7 +30,7 @@ async function checkYouTubeRemote(key: string): Promise<VideoStatus> {
   try { const c = await redis(["GET", ck]); if (typeof c === "string") return c as VideoStatus; } catch { /* cache optional */ }
   let s: VideoStatus = "unknown";
   try {
-    const r = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(`https://www.youtube.com/watch?v=${key}`)}`, { signal: AbortSignal.timeout(3000) });
+    const r = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(`https://www.youtube.com/watch?v=${key}`)}`, { signal: AbortSignal.timeout(1200) });
     s = r.ok ? "ok" : r.status === 401 || r.status === 403 ? "embed_disabled" : r.status === 404 || r.status === 400 ? "removed" : "unknown";
   } catch { s = "unknown"; }
   // Availability is cached separately from metadata and expires quickly; unknown results are retried sooner.

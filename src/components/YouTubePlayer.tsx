@@ -21,8 +21,8 @@ export function YouTubePlayer({ id, onFail, title = "Trailer" }: { id: string; o
       if (m?.event === "onReady" || m?.event === "initialDelivery") setState("ready");
       if (m?.event === "onError" && !done) {
         done = true; setState("error");
-        // Give the user a moment to read the message, then skip to the next playable clip.
-        setTimeout(() => failRef.current(), 1500);
+        // Blocked/removed clip: skip to the next playable one almost immediately.
+        setTimeout(() => failRef.current(), 300);
       }
     };
     addEventListener("message", onMsg);
