@@ -66,6 +66,18 @@ async function keepPlayable(items: any[], fallbackType?: string, limit = 60) {
   }));
   return items.filter((_, k) => ok[k]).slice(0, limit);
 }
+/** Same strict filter, but with a deadline: titles not verified in time are left out (never shown unverified). */
+async function keepPlayableBy(items: any[], fallbackType: string, limit: number, ms: number) {
+  const uploads = await uploadedIds().catch(() => new Set<string>());
+  const ok: boolean[] = items.map(() => false);
+  const all = Promise.all(items.map(async (x: any, k) => {
+    const t = x.media_type ?? fallbackType;
+    if (!x.title || !x.poster_path || !x.overview || (t !== "movie" && t !== "tv")) return;
+    ok[k] = uploads.has(`${t}:${x.id}`) || await isPlayable(t, x.id);
+  }));
+  await Promise.race([all, new Promise((r) => setTimeout(r, ms))]);
+  return items.filter((_, k) => ok[k]).slice(0, limit);
+}
 
 const today = () => new Date().toISOString().slice(0, 10);
 function dayHash(s: string) { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; }
@@ -166,9 +178,10 @@ async function handle(a: string, q: URLSearchParams) {
       const more = await tmdbJson(`${t}/${i}/videos`, { include_video_language: vl }).catch(() => ({ results: [] }));
       // Similar/recommendations stay slim (no per-title video checks) so the title response isn't blocked on ~36 lookups.
       const videos = (await resolveVideos([...(d.videos?.results ?? []), ...(more.results ?? [])])).filter((v) => v.status === "ok");
+      // Suggestions never hold up the trailer: wait at most ~400ms, keep the ones already verified; the rest keep warming the cache.
       const [similar, recommendations] = await Promise.all([
-        keepPlayable(quickCheck(list(d.similar ?? {}, t).results.slice(0, 18), t, 18), t, 18),
-        keepPlayable(quickCheck(list(d.recommendations ?? {}, t).results.slice(0, 18), t, 18), t, 18),
+        keepPlayableBy(quickCheck(list(d.similar ?? {}, t).results.slice(0, 18), t, 18), t, 18, 400),
+        keepPlayableBy(quickCheck(list(d.recommendations ?? {}, t).results.slice(0, 18), t, 18), t, 18, 400),
       ]);
       return {
         id: d.id, media_type: t, title: d.title ?? d.name, tagline: d.tagline, overview: d.overview,
