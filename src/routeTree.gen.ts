@@ -10,33 +10,349 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AzRouteImport } from './routes/az'
+import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as GameRouteImport } from './routes/game'
+import { Route as LiveRouteImport } from './routes/live'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PostsRouteImport } from './routes/posts'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as StudioRouteImport } from './routes/studio'
+import { Route as WatchlistRouteImport } from './routes/watchlist'
+import { Route as ApiContentRouteImport } from './routes/api/content'
+import { Route as CollectionIdRouteImport } from './routes/collection.$id'
+import { Route as OriginalIdRouteImport } from './routes/original.$id'
+import { Route as PartyCodeRouteImport } from './routes/party.$code'
+import { Route as PersonIdRouteImport } from './routes/person.$id'
+import { Route as PostIdRouteImport } from './routes/post.$id'
+import { Route as ApiMediaImgRouteImport } from './routes/api/media/img'
+import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
+import { Route as ApiPublicJobsRouteImport } from './routes/api/public/jobs'
+import { Route as ApiPublicSearchSyncRouteImport } from './routes/api/public/search-sync'
+import { Route as ApiTmdbSplatRouteImport } from './routes/api/tmdb/$'
+import { Route as TTypeIdRouteImport } from './routes/t.$type.$id'
+import { Route as WatchTypeIdRouteImport } from './routes/watch.$type.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AzRoute = AzRouteImport.update({
+  id: '/az',
+  path: '/az',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExploreRoute = ExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GameRoute = GameRouteImport.update({
+  id: '/game',
+  path: '/game',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveRoute = LiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostsRoute = PostsRouteImport.update({
+  id: '/posts',
+  path: '/posts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudioRoute = StudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WatchlistRoute = WatchlistRouteImport.update({
+  id: '/watchlist',
+  path: '/watchlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiContentRoute = ApiContentRouteImport.update({
+  id: '/api/content',
+  path: '/api/content',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionIdRoute = CollectionIdRouteImport.update({
+  id: '/collection/$id',
+  path: '/collection/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OriginalIdRoute = OriginalIdRouteImport.update({
+  id: '/original/$id',
+  path: '/original/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartyCodeRoute = PartyCodeRouteImport.update({
+  id: '/party/$code',
+  path: '/party/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PersonIdRoute = PersonIdRouteImport.update({
+  id: '/person/$id',
+  path: '/person/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostIdRoute = PostIdRouteImport.update({
+  id: '/post/$id',
+  path: '/post/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMediaImgRoute = ApiMediaImgRouteImport.update({
+  id: '/api/media/img',
+  path: '/api/media/img',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/api/public/health',
+  path: '/api/public/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicJobsRoute = ApiPublicJobsRouteImport.update({
+  id: '/api/public/jobs',
+  path: '/api/public/jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSearchSyncRoute = ApiPublicSearchSyncRouteImport.update({
+  id: '/api/public/search-sync',
+  path: '/api/public/search-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTmdbSplatRoute = ApiTmdbSplatRouteImport.update({
+  id: '/api/tmdb/$',
+  path: '/api/tmdb/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TTypeIdRoute = TTypeIdRouteImport.update({
+  id: '/t/$type/$id',
+  path: '/t/$type/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WatchTypeIdRoute = WatchTypeIdRouteImport.update({
+  id: '/watch/$type/$id',
+  path: '/watch/$type/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/az': typeof AzRoute
+  '/calendar': typeof CalendarRoute
+  '/compare': typeof CompareRoute
+  '/explore': typeof ExploreRoute
+  '/game': typeof GameRoute
+  '/live': typeof LiveRoute
+  '/login': typeof LoginRoute
+  '/posts': typeof PostsRoute
+  '/search': typeof SearchRoute
+  '/studio': typeof StudioRoute
+  '/watchlist': typeof WatchlistRoute
+  '/api/content': typeof ApiContentRoute
+  '/collection/$id': typeof CollectionIdRoute
+  '/original/$id': typeof OriginalIdRoute
+  '/party/$code': typeof PartyCodeRoute
+  '/person/$id': typeof PersonIdRoute
+  '/post/$id': typeof PostIdRoute
+  '/api/media/img': typeof ApiMediaImgRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/jobs': typeof ApiPublicJobsRoute
+  '/api/public/search-sync': typeof ApiPublicSearchSyncRoute
+  '/api/tmdb/$': typeof ApiTmdbSplatRoute
+  '/t/$type/$id': typeof TTypeIdRoute
+  '/watch/$type/$id': typeof WatchTypeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/az': typeof AzRoute
+  '/calendar': typeof CalendarRoute
+  '/compare': typeof CompareRoute
+  '/explore': typeof ExploreRoute
+  '/game': typeof GameRoute
+  '/live': typeof LiveRoute
+  '/login': typeof LoginRoute
+  '/posts': typeof PostsRoute
+  '/search': typeof SearchRoute
+  '/studio': typeof StudioRoute
+  '/watchlist': typeof WatchlistRoute
+  '/api/content': typeof ApiContentRoute
+  '/collection/$id': typeof CollectionIdRoute
+  '/original/$id': typeof OriginalIdRoute
+  '/party/$code': typeof PartyCodeRoute
+  '/person/$id': typeof PersonIdRoute
+  '/post/$id': typeof PostIdRoute
+  '/api/media/img': typeof ApiMediaImgRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/jobs': typeof ApiPublicJobsRoute
+  '/api/public/search-sync': typeof ApiPublicSearchSyncRoute
+  '/api/tmdb/$': typeof ApiTmdbSplatRoute
+  '/t/$type/$id': typeof TTypeIdRoute
+  '/watch/$type/$id': typeof WatchTypeIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/az': typeof AzRoute
+  '/calendar': typeof CalendarRoute
+  '/compare': typeof CompareRoute
+  '/explore': typeof ExploreRoute
+  '/game': typeof GameRoute
+  '/live': typeof LiveRoute
+  '/login': typeof LoginRoute
+  '/posts': typeof PostsRoute
+  '/search': typeof SearchRoute
+  '/studio': typeof StudioRoute
+  '/watchlist': typeof WatchlistRoute
+  '/api/content': typeof ApiContentRoute
+  '/collection/$id': typeof CollectionIdRoute
+  '/original/$id': typeof OriginalIdRoute
+  '/party/$code': typeof PartyCodeRoute
+  '/person/$id': typeof PersonIdRoute
+  '/post/$id': typeof PostIdRoute
+  '/api/media/img': typeof ApiMediaImgRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/jobs': typeof ApiPublicJobsRoute
+  '/api/public/search-sync': typeof ApiPublicSearchSyncRoute
+  '/api/tmdb/$': typeof ApiTmdbSplatRoute
+  '/t/$type/$id': typeof TTypeIdRoute
+  '/watch/$type/$id': typeof WatchTypeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/az'
+    | '/calendar'
+    | '/compare'
+    | '/explore'
+    | '/game'
+    | '/live'
+    | '/login'
+    | '/posts'
+    | '/search'
+    | '/studio'
+    | '/watchlist'
+    | '/api/content'
+    | '/collection/$id'
+    | '/original/$id'
+    | '/party/$code'
+    | '/person/$id'
+    | '/post/$id'
+    | '/api/media/img'
+    | '/api/public/health'
+    | '/api/public/jobs'
+    | '/api/public/search-sync'
+    | '/api/tmdb/$'
+    | '/t/$type/$id'
+    | '/watch/$type/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/az'
+    | '/calendar'
+    | '/compare'
+    | '/explore'
+    | '/game'
+    | '/live'
+    | '/login'
+    | '/posts'
+    | '/search'
+    | '/studio'
+    | '/watchlist'
+    | '/api/content'
+    | '/collection/$id'
+    | '/original/$id'
+    | '/party/$code'
+    | '/person/$id'
+    | '/post/$id'
+    | '/api/media/img'
+    | '/api/public/health'
+    | '/api/public/jobs'
+    | '/api/public/search-sync'
+    | '/api/tmdb/$'
+    | '/t/$type/$id'
+    | '/watch/$type/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/az'
+    | '/calendar'
+    | '/compare'
+    | '/explore'
+    | '/game'
+    | '/live'
+    | '/login'
+    | '/posts'
+    | '/search'
+    | '/studio'
+    | '/watchlist'
+    | '/api/content'
+    | '/collection/$id'
+    | '/original/$id'
+    | '/party/$code'
+    | '/person/$id'
+    | '/post/$id'
+    | '/api/media/img'
+    | '/api/public/health'
+    | '/api/public/jobs'
+    | '/api/public/search-sync'
+    | '/api/tmdb/$'
+    | '/t/$type/$id'
+    | '/watch/$type/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AzRoute: typeof AzRoute
+  CalendarRoute: typeof CalendarRoute
+  CompareRoute: typeof CompareRoute
+  ExploreRoute: typeof ExploreRoute
+  GameRoute: typeof GameRoute
+  LiveRoute: typeof LiveRoute
+  LoginRoute: typeof LoginRoute
+  PostsRoute: typeof PostsRoute
+  SearchRoute: typeof SearchRoute
+  StudioRoute: typeof StudioRoute
+  WatchlistRoute: typeof WatchlistRoute
+  ApiContentRoute: typeof ApiContentRoute
+  CollectionIdRoute: typeof CollectionIdRoute
+  OriginalIdRoute: typeof OriginalIdRoute
+  PartyCodeRoute: typeof PartyCodeRoute
+  PersonIdRoute: typeof PersonIdRoute
+  PostIdRoute: typeof PostIdRoute
+  ApiMediaImgRoute: typeof ApiMediaImgRoute
+  ApiPublicHealthRoute: typeof ApiPublicHealthRoute
+  ApiPublicJobsRoute: typeof ApiPublicJobsRoute
+  ApiPublicSearchSyncRoute: typeof ApiPublicSearchSyncRoute
+  ApiTmdbSplatRoute: typeof ApiTmdbSplatRoute
+  TTypeIdRoute: typeof TTypeIdRoute
+  WatchTypeIdRoute: typeof WatchTypeIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +364,203 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/az': {
+      id: '/az'
+      path: '/az'
+      fullPath: '/az'
+      preLoaderRoute: typeof AzRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explore': {
+      id: '/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ExploreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/game': {
+      id: '/game'
+      path: '/game'
+      fullPath: '/game'
+      preLoaderRoute: typeof GameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live': {
+      id: '/live'
+      path: '/live'
+      fullPath: '/live'
+      preLoaderRoute: typeof LiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/posts': {
+      id: '/posts'
+      path: '/posts'
+      fullPath: '/posts'
+      preLoaderRoute: typeof PostsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/studio': {
+      id: '/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof StudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/watchlist': {
+      id: '/watchlist'
+      path: '/watchlist'
+      fullPath: '/watchlist'
+      preLoaderRoute: typeof WatchlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/content': {
+      id: '/api/content'
+      path: '/api/content'
+      fullPath: '/api/content'
+      preLoaderRoute: typeof ApiContentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collection/$id': {
+      id: '/collection/$id'
+      path: '/collection/$id'
+      fullPath: '/collection/$id'
+      preLoaderRoute: typeof CollectionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/original/$id': {
+      id: '/original/$id'
+      path: '/original/$id'
+      fullPath: '/original/$id'
+      preLoaderRoute: typeof OriginalIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/party/$code': {
+      id: '/party/$code'
+      path: '/party/$code'
+      fullPath: '/party/$code'
+      preLoaderRoute: typeof PartyCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/person/$id': {
+      id: '/person/$id'
+      path: '/person/$id'
+      fullPath: '/person/$id'
+      preLoaderRoute: typeof PersonIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post/$id': {
+      id: '/post/$id'
+      path: '/post/$id'
+      fullPath: '/post/$id'
+      preLoaderRoute: typeof PostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/media/img': {
+      id: '/api/media/img'
+      path: '/api/media/img'
+      fullPath: '/api/media/img'
+      preLoaderRoute: typeof ApiMediaImgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/api/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/jobs': {
+      id: '/api/public/jobs'
+      path: '/api/public/jobs'
+      fullPath: '/api/public/jobs'
+      preLoaderRoute: typeof ApiPublicJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/search-sync': {
+      id: '/api/public/search-sync'
+      path: '/api/public/search-sync'
+      fullPath: '/api/public/search-sync'
+      preLoaderRoute: typeof ApiPublicSearchSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tmdb/$': {
+      id: '/api/tmdb/$'
+      path: '/api/tmdb/$'
+      fullPath: '/api/tmdb/$'
+      preLoaderRoute: typeof ApiTmdbSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/t/$type/$id': {
+      id: '/t/$type/$id'
+      path: '/t/$type/$id'
+      fullPath: '/t/$type/$id'
+      preLoaderRoute: typeof TTypeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/watch/$type/$id': {
+      id: '/watch/$type/$id'
+      path: '/watch/$type/$id'
+      fullPath: '/watch/$type/$id'
+      preLoaderRoute: typeof WatchTypeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AzRoute: AzRoute,
+  CalendarRoute: CalendarRoute,
+  CompareRoute: CompareRoute,
+  ExploreRoute: ExploreRoute,
+  GameRoute: GameRoute,
+  LiveRoute: LiveRoute,
+  LoginRoute: LoginRoute,
+  PostsRoute: PostsRoute,
+  SearchRoute: SearchRoute,
+  StudioRoute: StudioRoute,
+  WatchlistRoute: WatchlistRoute,
+  ApiContentRoute: ApiContentRoute,
+  CollectionIdRoute: CollectionIdRoute,
+  OriginalIdRoute: OriginalIdRoute,
+  PartyCodeRoute: PartyCodeRoute,
+  PersonIdRoute: PersonIdRoute,
+  PostIdRoute: PostIdRoute,
+  ApiMediaImgRoute: ApiMediaImgRoute,
+  ApiPublicHealthRoute: ApiPublicHealthRoute,
+  ApiPublicJobsRoute: ApiPublicJobsRoute,
+  ApiPublicSearchSyncRoute: ApiPublicSearchSyncRoute,
+  ApiTmdbSplatRoute: ApiTmdbSplatRoute,
+  TTypeIdRoute: TTypeIdRoute,
+  WatchTypeIdRoute: WatchTypeIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

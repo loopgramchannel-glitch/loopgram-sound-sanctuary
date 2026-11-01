@@ -1,0 +1,30 @@
+# Roadmap
+
+- [x] Save service keys (TMDB, Upstash, R2, AWS)
+- [x] Re-import code from loopgram-sound-sanctuary + save all keys (Firebase, Algolia, Turnstile, Cloudflare, SQS, CloudWatch)
+- [x] Remove keys that were committed in README
+- [x] Test each key connects (TMDB short API key rejected; token works)
+- [x] Bring in Loop Galaxy code from GitHub
+- [x] 7-part doc: flows, hotspots, crew photos, speed, video, logs, load-test script
+- [x] Site-wide "Playable only" filter + type chips (Search, Explore, A–Z)
+- [x] Algolia search: index from content table, "On LOOPGRAM" results on Search, protected rebuild/retry endpoint
+- [x] SQS background jobs (now drained automatically every minute)
+- [x] CloudWatch logging (verified)
+- [~] Turnstile (verifier done; no login/sign-up forms exist yet)
+- [ ] Cloudflare cache/security changes (token can read zone now; waiting on owner approval of specific changes)
+- [x] Shared /login (email + password, sign-up, reset) with Firebase; owner → /studio, users → site
+- [x] Studio: overview, users (disable/enable/sign-out), media list, search sync, settings/banner/maintenance, jobs, health, audit log
+- [ ] Studio: content library, homepage manager, collections, moderation, analytics (need new data model / data source)
+- [ ] Rotate every key pasted in chat (blocked: owner must do this at each provider)
+- [ ] Staged load test of login (blocked: needs owner approval + budget; see docs/AUTH-STUDIO.md)
+- [x] Studio uploads: send videos/pictures straight to R2 with progress; movie/episode slots; delete files
+- [x] TMDB-style details for own titles (type, tagline, date, runtime, rating, genres, cast, banner, TV episodes)
+- [x] Smart video fit: phone (tall) videos fill the screen, wide videos stay 16:9
+- [x] Studio Posts: owner posts (text, video, picture) shown site-wide (home shelf, /posts, pinned banner)
+- [x] TMDB on/off switch in Studio; owner titles lead every list, owner-only mode when TMDB is off
+- [x] Studio Media Library and Posts shown as picture thumbnails
+- [x] TMDB answers saved permanently in DynamoDB; site serves them when TMDB is off/revoked
+- [x] Owner posts saved permanently in DynamoDB with file checks before publishing (5 existing posts copied)
+- [x] Scheduled bulk TMDB ingestion + owner posts in Algolia
+- [ ] Server video processing (transcode/thumbnails/malware scan) (blocked: needs a new service, owner approval)
+- [ ] DynamoDB backups / Point-in-Time Recovery (blocked: AWS key lacks dynamodb:UpdateContinuousBackups/DescribeContinuousBackups)
