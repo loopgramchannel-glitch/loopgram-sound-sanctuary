@@ -31,6 +31,11 @@ export function attachSource(v: HTMLVideoElement, url: string): () => void {
   let dead = false, inst: { destroy: () => void } | null = null, offErr: (() => void) | null = null;
   const fallback = () => { if (dead) return; inst?.destroy(); inst = null; if (v.src !== url) { v.src = url; v.load(); } };
   if (!hls) { v.src = url; return () => { dead = true; }; }
+  // Unknown HLS status: start the original file at once (no blank player while we ask), and remember the
+  // answer in the background so the next open uses the streaming copy if it exists.
+  let known: string | null = null;
+  try { known = sessionStorage.getItem(`lg:hls:${hls}`); } catch { /* storage off */ }
+  if (known !== "1") { v.src = url; if (known === null) void hasHls(hls); return () => { dead = true; }; }
   hasHls(hls).then((ok) => {
     if (dead) return;
     if (!ok) return fallback();

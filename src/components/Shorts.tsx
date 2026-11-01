@@ -86,6 +86,22 @@ export function ShortsPlayer({ shorts, startId, onShare }: { shorts: PostT[]; st
     const n = Math.min(shorts.length - 1, Math.max(0, i));
     el.scrollTo({ top: n * el.clientHeight, behavior: "smooth" });
   };
+  // Mouse drag (computers): touch phones already scroll natively; this adds click-and-drag swiping.
+  useEffect(() => {
+    const el = box.current; if (!el) return;
+    let y0 = 0, down = false, moved = false;
+    const pd = (e: PointerEvent) => { if (e.pointerType !== "mouse" || e.button !== 0) return; down = true; moved = false; y0 = e.clientY; };
+    const pm = (e: PointerEvent) => { if (down && Math.abs(e.clientY - y0) > 8) moved = true; };
+    const pu = (e: PointerEvent) => {
+      if (!down) return; down = false;
+      const dy = e.clientY - y0;
+      if (moved && Math.abs(dy) > 40) goTo(activeRef.current + (dy < 0 ? 1 : -1));
+    };
+    const click = (e: MouseEvent) => { if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; } };
+    el.addEventListener("pointerdown", pd); window.addEventListener("pointermove", pm); window.addEventListener("pointerup", pu);
+    el.addEventListener("click", click, true);
+    return () => { el.removeEventListener("pointerdown", pd); window.removeEventListener("pointermove", pm); window.removeEventListener("pointerup", pu); el.removeEventListener("click", click, true); };
+  }, [shorts.length]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === "ArrowDown") { e.preventDefault(); goTo(activeRef.current + 1); } if (e.key === "ArrowUp") { e.preventDefault(); goTo(activeRef.current - 1); } if (e.key === "Escape") navigate({ to: "/posts" }); };
     window.addEventListener("keydown", k);
@@ -134,9 +150,22 @@ function ShortSlide({ post, active, warm, muted, setMuted, onShare }: { post: Po
   useEffect(() => {
     const v = ref.current; if (!v) return;
     if (!active) { v.pause(); return; }
-    v.currentTime = 0; setPaused(false);
+    setPaused(false);
     v.muted = muted;
-    v.play().catch(() => { v.muted = true; setMuted(true); v.play().catch(() => setPaused(true)); });
+    let gone = false;
+    const start = () => {
+      if (gone) return;
+      if (!v.currentSrc && !v.src) return; // source not set yet — "canplay" will call us again
+      v.play().catch((e: unknown) => {
+        if (gone || (e as Error)?.name === "AbortError") return;
+        v.muted = true; setMuted(true);
+        v.play().catch(() => { if (!gone) setPaused(true); });
+      });
+    };
+    if (v.currentTime > 0) v.currentTime = 0;
+    start();
+    v.addEventListener("canplay", start, { once: true });
+    return () => { gone = true; v.removeEventListener("canplay", start); };
   }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (ref.current) ref.current.muted = muted; }, [muted]);
 
