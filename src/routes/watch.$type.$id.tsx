@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { cachedTrailer } from "@/lib/speed";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { api, img, track } from "@/lib/api";
@@ -52,9 +53,13 @@ function WatchPage() {
   const playable: Video[] = all.filter((x) => !failed.includes(x.key));
   const epPlayable = playable.filter((x) => epVids.some((y) => y.key === x.key));
   // A ?v= key plays immediately — the player never waits for title/episode data to arrive.
-  const fromUrl: Video | undefined = v && !failed.includes(v) ? { key: v, name: "Video", type: "Video", official: true, status: "" } : undefined;
+  const qc = useQueryClient();
+  // No ?v=: use a trailer key warmed from the feed so the player still mounts at 0ms.
+  const [warmKey] = useState(() => (t === "movie" && !v ? cachedTrailer(qc, t, id) : undefined));
+  const vk = v ?? warmKey;
+  const fromUrl: Video | undefined = vk && !failed.includes(vk) ? { key: vk, name: "Video", type: "Video", official: true, status: "" } : undefined;
   // TV without its own clip shows the series video, clearly labelled — never another episode's clip passed off as this one.
-  const current = playable.find((x) => x.key === v) ?? fromUrl
+  const current = playable.find((x) => x.key === vk) ?? fromUrl
     ?? (t === "tv" ? epPlayable[0] ?? playable[0] : playable.find((x) => x.type === "Trailer") ?? playable[0]);
   const waitEp = t === "tv" && !v && eq.isPending;
   const instantKey = waitEp ? undefined : current?.key;

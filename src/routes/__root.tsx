@@ -110,7 +110,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "dns-prefetch", href: "https://media.loopgramchannel.com" },
       { rel: "dns-prefetch", href: "https://i.ytimg.com" },
       { rel: "preconnect", href: "https://www.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "preconnect", href: "https://rr1---sn-a5mekn6s.googlevideo.com" },
       { rel: "dns-prefetch", href: "https://googlevideo.com" },
       { rel: "dns-prefetch", href: "https://jnn-pa.googleapis.com" },
       { rel: "dns-prefetch", href: "https://static.doubleclick.net" },
