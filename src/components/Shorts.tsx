@@ -145,11 +145,11 @@ export function ShortsPlayer({ shorts, startId, onShare }: { shorts: PostT[]; st
 
   return (
     <div className="fixed inset-0 z-[60] bg-black">
-      <div ref={box} className="h-dvh touch-none overflow-hidden overscroll-none">
+      <div ref={box} className="h-dvh touch-none select-none overflow-hidden overscroll-none">
         <div ref={track} className="will-change-transform">
           {shorts.map((p, i) => (
             <div key={p.id} className="relative flex h-dvh w-full items-center justify-center overflow-hidden [contain:strict]">
-              {Math.abs(i - active) <= 2
+              {Math.abs(i - active) <= 1
                 ? <ShortSlide post={p} active={i === active} muted={muted} setMuted={setMuted} onShare={() => onShare(p)} />
                 : null}
             </div>
@@ -205,8 +205,7 @@ function ShortSlide({ post, active, muted, setMuted, onShare }: { post: PostT; a
           : <PostThumb post={post} className="absolute inset-0 h-full w-full" />
       ) : (
         <>
-          {post.imageUrl && <img src={post.imageUrl} alt="" aria-hidden className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl" />}
-          <video ref={ref} poster={post.imageUrl || undefined} playsInline loop preload="auto" muted={muted}
+          <video ref={ref} poster={post.imageUrl || undefined} playsInline loop preload={active ? "auto" : "metadata"} draggable={false} muted={muted}
             onClick={toggle} className="absolute inset-0 h-full w-full object-contain" />
         </>
       )}
